@@ -9,7 +9,7 @@ GIT INSTALL:
 cd && git clone https://github.com/Marine-Robotics-Club/ros2_humble_velodyne_install.git
 ```
 ```
-cd ~/ros2_humble_velodyne_install && chmod +x ros2_humble_velodyne_install && sudo ./ros2_humble_velodyne_install
+cd ~/ros2_humble_velodyne_install && chmod +x ros2_humble_velodyne_install.sh && sudo ./ros2_humble_velodyne_install.sh
 ```
 follow installation steps and enjoy ^_^
 
