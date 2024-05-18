@@ -62,8 +62,9 @@ colcon build
 source install/setup.bash
 
 # Create directories for launch and config files if they don't exist
-LAUNCH_DIR=$SRC_DIR/my_velodyne_launch/launch
-CONFIG_DIR=$SRC_DIR/my_velodyne_launch/config
+MY_VELODYNE_LAUNCH_DIR=$SRC_DIR/my_velodyne_launch
+LAUNCH_DIR=$MY_VELODYNE_LAUNCH_DIR/launch
+CONFIG_DIR=$MY_VELODYNE_LAUNCH_DIR/config
 
 if [ ! -d "$LAUNCH_DIR" ]; then
   mkdir -p $LAUNCH_DIR
@@ -72,6 +73,36 @@ fi
 if [ ! -d "$CONFIG_DIR" ]; then
   mkdir -p $CONFIG_DIR
 fi
+
+# Create the package.xml file
+cat <<EOL > $MY_VELODYNE_LAUNCH_DIR/package.xml
+<?xml version="1.0"?>
+<package format="3">
+  <name>my_velodyne_launch</name>
+  <version>0.0.0</version>
+  <description>Launch files for Velodyne LiDAR</description>
+  <maintainer email="your_email@example.com">Your Name</maintainer>
+  <license>Apache 2.0</license>
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <exec_depend>ros_humble_velodyne</exec_depend>
+  <exec_depend>velodyne_driver</exec_depend>
+  <exec_depend>velodyne_pointcloud</exec_depend>
+</package>
+EOL
+
+# Create the CMakeLists.txt file
+cat <<EOL > $MY_VELODYNE_LAUNCH_DIR/CMakeLists.txt
+cmake_minimum_required(VERSION 3.5)
+project(my_velodyne_launch)
+
+find_package(ament_cmake REQUIRED)
+
+install(DIRECTORY launch config
+  DESTINATION share/\${PROJECT_NAME}
+)
+
+ament_package()
+EOL
 
 # Create the YAML configuration file for VLP16_hires_db
 cat <<EOL > $CONFIG_DIR/VLP16_hires_db.yaml
@@ -94,7 +125,7 @@ EOL
 
 # Rename the existing launch file for vlp16_highres if it exists
 if [ -f "$LAUNCH_DIR/vlp16_highres.launch.py" ]; then
-  mv $LAUNCH_DIR/vlp16_highres.launch.py $LAUNCH_DIR/echo "source ~/Vision2/install/setup.bash && ros2 launch my_velodyne_launch vlp16.launch.py"
+  mv $LAUNCH_DIR/vlp16_highres.launch.py $LAUNCH_DIR/vlp16_highres_launch.py
 fi
 
 # Create the launch file for VLP16_hires_db.yaml
@@ -108,7 +139,7 @@ def generate_launch_description():
     return LaunchDescription([
         DeclareLaunchArgument(
             'config',
-            default_value='$CONFIG_DIR/VLP16db.yaml',
+            default_value='$CONFIG_DIR/VLP16_hires_db.yaml',
             description='Path to the YAML configuration file'
         ),
         Node(
@@ -134,6 +165,4 @@ colcon build
 # Print instructions to the user
 echo "Velodyne driver installation and setup complete."
 echo "To launch the Velodyne driver with the VLP16_hires_db configuration, use the following command:"
-echo "source ~/Vision2/install/setup.bash && ros2 launch my_velodyne_launch vlp16_highres.launch.py"
-echo "To launch the Velodyne driver with the VLP16db configuration, use the following command:"
 echo "source ~/Vision2/install/setup.bash && ros2 launch my_velodyne_launch vlp16.launch.py"
