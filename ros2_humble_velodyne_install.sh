@@ -53,85 +53,40 @@ MY_VELODYNE_LAUNCH_DIR=$SRC_DIR/my_velodyne_launch
 
 if [ ! -d "$MY_VELODYNE_LAUNCH_DIR" ]; then
   mkdir -p $MY_VELODYNE_LAUNCH_DIR/launch
-  mkdir -p $MY_VELODYNE_LAUNCH_DIR/config
-
-  # Create the package.xml file
-  cat <<EOL > $MY_VELODYNE_LAUNCH_DIR/package.xml
-<?xml version="1.0"?>
-<package format="3">
-  <name>my_velodyne_launch</name>
-  <version>0.0.0</version>
-  <description>Launch files for Velodyne LiDAR</description>
-  <maintainer email="your_email@example.com">Your Name</maintainer>
-  <license>Apache 2.0</license>
-  <buildtool_depend>ament_cmake</buildtool_depend>
-  <exec_depend>velodyne_driver</exec_depend>
-  <exec_depend>velodyne_pointcloud</exec_depend>
-</package>
-EOL
-
-  # Create the CMakeLists.txt file
-  cat <<EOL > $MY_VELODYNE_LAUNCH_DIR/CMakeLists.txt
-cmake_minimum_required(VERSION 3.5)
-project(my_velodyne_launch)
-
-find_package(ament_cmake REQUIRED)
-
-install(DIRECTORY launch config
-  DESTINATION share/\${PROJECT_NAME}
-)
-
-ament_package()
-EOL
-
 fi
-
-# Create the YAML configuration file for VLP16_hires_db
-cat <<EOL > $MY_VELODYNE_LAUNCH_DIR/config/VLP16_hires_db.yaml
-velodyne_driver_node:
-  ros__parameters:
-    device_ip: "192.168.1.201"
-    frame_id: "velodyne"
-    model: "VLP16"
-    rpm: 600
-    port: 2368
-
-velodyne_convert_node:
-  ros__parameters:
-    calibration: "$ROS2_WS/src/velodyne/velodyne_pointcloud/params/VLP16.yaml"
-    min_range: 0.5
-    max_range: 100.0
-    view_direction: 0.0
-    view_width: 360.0
-EOL
 
 # Create the launch file for VLP16_hires_db.yaml
 cat <<EOL > $MY_VELODYNE_LAUNCH_DIR/launch/vlp16.launch.py
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument
-from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
 
 def generate_launch_description():
     return LaunchDescription([
-        DeclareLaunchArgument(
-            'config',
-            default_value='config/VLP16_hires_db.yaml',
-            description='Path to the YAML configuration file'
-        ),
         Node(
             package='velodyne_driver',
             executable='velodyne_driver_node',
             name='velodyne_driver_node',
             output='screen',
-            parameters=[LaunchConfiguration('config')]
+            parameters=[{
+                'device_ip': '192.168.1.201',  # Set the IP address of your Velodyne LiDAR
+                'frame_id': 'velodyne',
+                'model': 'VLP16',
+                'rpm': 600,
+                'port': 2368,
+            }],
         ),
         Node(
             package='velodyne_pointcloud',
             executable='velodyne_convert_node',
             name='velodyne_convert_node',
             output='screen',
-            parameters=[LaunchConfiguration('config')]
+            parameters=[{
+                'calibration': '~/Vision2/src/velodyne/velodyne_pointcloud/params/VLP16_hires_db.yaml',
+                'min_range': 0.5,
+                'max_range': 100.0,
+                'view_direction': 0.0,
+                'view_width': 360.0,
+            }],
         ),
     ])
 EOL
@@ -139,13 +94,16 @@ EOL
 # Navigate to the workspace root
 cd $ROS2_WS
 
+# Source the setup script
+source /opt/ros/humble/setup.bash
+
 # Build the workspace
 colcon build
 
-# Source the setup script
+# Source the setup script again
 source install/setup.bash
 
 # Print instructions to the user
 echo "Velodyne driver installation and setup complete."
 echo "To launch the Velodyne driver with the VLP16_hires_db configuration, use the following command:"
-echo "source ~/Vision2/install/setup.bash && ros2 launch my_velodyne_launch vlp16.launch.py"
+echo "ros2 launch my_velodyne_launch vlp16.launch.py"
