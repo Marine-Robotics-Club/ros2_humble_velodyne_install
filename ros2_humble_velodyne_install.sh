@@ -13,6 +13,10 @@ fi
 apt update
 apt install -y ros-humble-velodyne
 
+
+if [ -d "ros2_humble_velodyne_install" ]; then
+  rm -rf ros2_humble_velodyne_install
+fi
 # Define the ROS 2 workspace
 ROS2_WS=~/Vision2
 SRC_DIR=$ROS2_WS/src
