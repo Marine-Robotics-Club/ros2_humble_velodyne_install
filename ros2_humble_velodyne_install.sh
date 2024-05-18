@@ -13,10 +13,24 @@ fi
 apt update
 apt install -y ros-humble-velodyne
 
-# Create ROS 2 workspace if it doesn't exist
+# Define the ROS 2 workspace
 ROS2_WS=~/Vision2
 SRC_DIR=$ROS2_WS/src
 
+# Delete existing install, log, and build directories if they exist
+if [ -d "$ROS2_WS/install" ]; then
+  rm -rf $ROS2_WS/install
+fi
+
+if [ -d "$ROS2_WS/log" ]; then
+  rm -rf $ROS2_WS/log
+fi
+
+if [ -d "$ROS2_WS/build" ]; then
+  rm -rf $ROS2_WS/build
+fi
+
+# Create ROS 2 workspace if it doesn't exist
 if [ ! -d "$SRC_DIR" ]; then
   mkdir -p $SRC_DIR
 fi
