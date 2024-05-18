@@ -13,7 +13,7 @@ fi
 apt update
 apt install -y ros-humble-velodyne
 
-
+cd
 if [ -d "ros2_humble_velodyne_install" ]; then
   rm -rf ros2_humble_velodyne_install
 fi
