@@ -43,7 +43,7 @@ cd $SRC_DIR
 
 # Clone the velodyne repository
 if [ ! -d "velodyne" ]; then
-  git clone https://github.com/ros-drivers/velodyne.git -b ros2
+  git clone https://github.com/ros-drivers/velodyne.git -b ros2 $SRC_DIR/velodyne
 else
   echo "Velodyne repository already exists in the workspace."
 fi
@@ -54,6 +54,36 @@ MY_VELODYNE_LAUNCH_DIR=$SRC_DIR/my_velodyne_launch
 if [ ! -d "$MY_VELODYNE_LAUNCH_DIR" ]; then
   mkdir -p $MY_VELODYNE_LAUNCH_DIR/launch
   mkdir -p $MY_VELODYNE_LAUNCH_DIR/config
+
+  # Create the package.xml file
+  cat <<EOL > $MY_VELODYNE_LAUNCH_DIR/package.xml
+<?xml version="1.0"?>
+<package format="3">
+  <name>my_velodyne_launch</name>
+  <version>0.0.0</version>
+  <description>Launch files for Velodyne LiDAR</description>
+  <maintainer email="your_email@example.com">Your Name</maintainer>
+  <license>Apache 2.0</license>
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <exec_depend>velodyne_driver</exec_depend>
+  <exec_depend>velodyne_pointcloud</exec_depend>
+</package>
+EOL
+
+  # Create the CMakeLists.txt file
+  cat <<EOL > $MY_VELODYNE_LAUNCH_DIR/CMakeLists.txt
+cmake_minimum_required(VERSION 3.5)
+project(my_velodyne_launch)
+
+find_package(ament_cmake REQUIRED)
+
+install(DIRECTORY launch config
+  DESTINATION share/\${PROJECT_NAME}
+)
+
+ament_package()
+EOL
+
 fi
 
 # Create the YAML configuration file for VLP16_hires_db
@@ -68,7 +98,7 @@ velodyne_driver_node:
 
 velodyne_convert_node:
   ros__parameters:
-    calibration: "$SRC_DIR/velodyne/velodyne_pointcloud/params/VLP16.yaml"
+    calibration: "$ROS2_WS/src/velodyne/velodyne_pointcloud/params/VLP16.yaml"
     min_range: 0.5
     max_range: 100.0
     view_direction: 0.0
