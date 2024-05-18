@@ -17,6 +17,9 @@ apt install -y ros-humble-velodyne
 ROS2_WS=~/Vision2
 SRC_DIR=$ROS2_WS/src
 
+# Source ROS 2 setup script
+source /opt/ros/humble/setup.bash
+
 # Delete existing install, log, and build directories if they exist
 if [ -d "$ROS2_WS/install" ]; then
   rm -rf $ROS2_WS/install
@@ -70,7 +73,7 @@ if [ ! -d "$CONFIG_DIR" ]; then
   mkdir -p $CONFIG_DIR
 fi
 
-# Create the YAML configuration file
+# Create the YAML configuration file for VLP16_hires_db
 cat <<EOL > $CONFIG_DIR/VLP16_hires_db.yaml
 velodyne_driver_node:
   ros__parameters:
@@ -89,8 +92,13 @@ velodyne_convert_node:
     view_width: 360.0
 EOL
 
-# Create the launch file
-cat <<EOL > $LAUNCH_DIR/vlp16_launch.py
+# Rename the existing launch file for vlp16_highres if it exists
+if [ -f "$LAUNCH_DIR/vlp16_highres.launch.py" ]; then
+  mv $LAUNCH_DIR/vlp16_highres.launch.py $LAUNCH_DIR/echo "source ~/Vision2/install/setup.bash && ros2 launch my_velodyne_launch vlp16.launch.py"
+fi
+
+# Create the launch file for VLP16_hires_db.yaml
+cat <<EOL > $LAUNCH_DIR/vlp16.launch.py
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument
 from launch.substitutions import LaunchConfiguration
@@ -100,7 +108,7 @@ def generate_launch_description():
     return LaunchDescription([
         DeclareLaunchArgument(
             'config',
-            default_value='$CONFIG_DIR/VLP16_hires_db.yaml',
+            default_value='$CONFIG_DIR/VLP16db.yaml',
             description='Path to the YAML configuration file'
         ),
         Node(
@@ -125,5 +133,7 @@ colcon build
 
 # Print instructions to the user
 echo "Velodyne driver installation and setup complete."
-echo "To launch the Velodyne driver, use the following command:"
-echo "source ~/Vision2/install/setup.bash && ros2 launch my_velodyne_launch vlp16_launch.py"
+echo "To launch the Velodyne driver with the VLP16_hires_db configuration, use the following command:"
+echo "source ~/Vision2/install/setup.bash && ros2 launch my_velodyne_launch vlp16_highres.launch.py"
+echo "To launch the Velodyne driver with the VLP16db configuration, use the following command:"
+echo "source ~/Vision2/install/setup.bash && ros2 launch my_velodyne_launch vlp16.launch.py"
