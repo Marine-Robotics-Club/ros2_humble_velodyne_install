@@ -43,7 +43,7 @@ cd $SRC_DIR
 
 # Clone the velodyne repository
 if [ ! -d "velodyne" ]; then
-  git clone https://github.com/ros-drivers/velodyne.git -b ros2 $SRC_DIR/velodyne
+  git clone git clone -b humble-devel https://github.com/ros-drivers/velodyne.git
 else
   echo "Velodyne repository already exists in the workspace."
 fi
@@ -54,6 +54,19 @@ MY_VELODYNE_LAUNCH_DIR=$SRC_DIR/my_velodyne_launch
 if [ ! -d "$MY_VELODYNE_LAUNCH_DIR" ]; then
   mkdir -p $MY_VELODYNE_LAUNCH_DIR/launch
 fi
+
+sudo apt-get install python3-colcon-common-extensions sudo apt-get install ros-humble-diagnostic-updater 
+
+export CMAKE_PREFIX_PATH=$CMAKE_PREFIX_PATH:/opt/ros/humble
+
+export diagnostic_updater_DIR=/opt/ros/humble/share/diagnostic_updater/cmake
+
+sudo apt-get install libpcap-dev sudo apt-get update
+sudo apt install ufw
+sudo ufw disable 
+sudo apt update
+sudo apt upgrade
+colcon build --cmake-clean-cache
 
 # Create the launch file for VLP16_hires_db.yaml
 cat <<EOL > $MY_VELODYNE_LAUNCH_DIR/launch/vlp16.launch.py
